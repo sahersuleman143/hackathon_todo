@@ -208,3 +208,10 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+## Active Technologies
+- Python 3.8+ (standard library only, per FR-015) + None (stdlib only: `datetime` for timestamps) (001-console-todo-app)
+- In-memory list of dictionaries (no persistence, per FR-014) (001-console-todo-app)
+
+## Recent Changes
+- 001-console-todo-app: Added Python 3.8+ (standard library only, per FR-015) + None (stdlib only: `datetime` for timestamps)
