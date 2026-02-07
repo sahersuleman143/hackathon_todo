@@ -1,9 +1,8 @@
-// [Task T029] Login form component – FIXED (Error object safely handled)
+// [Task T029] Login form component – FINAL SAFE VERSION (no [object Object])
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/hooks';
-import { LoginCredentials, RegisterCredentials } from '@/lib/types/auth';
 
 interface Props {
   isLogin: boolean;
@@ -15,12 +14,12 @@ export default function LoginForm({ isLogin, onAuthSuccess }: Props) {
   const { login, register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null); // error ko string ya null rakha
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null); // pehle error clear karo
+    setError(null);
     setIsLoading(true);
 
     try {
@@ -31,16 +30,27 @@ export default function LoginForm({ isLogin, onAuthSuccess }: Props) {
       }
       onAuthSuccess();
     } catch (err: any) {
-      // Yeh line change ki – error ko safe string mein convert kiya
-      // backend se jo bhi object aaye (detail, message, error waghera), uska value nikal liya
-      const errorMessage =
-        err?.message ||
-        err?.detail ||
-        err?.error ||
-        err?.toString() ||
-        'Authentication failed';
+      // Sabse safe error message extraction – [object Object] kabhi nahi aayega
+      let errorMessage = 'Authentication failed. Please try again.';
+
+      if (err?.response?.data) {
+        // Swagger/FastAPI style response
+        const data = err.response.data;
+        errorMessage = data.detail || data.message || data.error || JSON.stringify(data);
+      } else if (err?.message) {
+        errorMessage = err.message;
+      } else if (err?.detail) {
+        errorMessage = err.detail;
+      } else if (err?.error) {
+        errorMessage = err.error;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      } else if (err) {
+        errorMessage = String(err) || 'Unknown error';
+      }
+
       setError(errorMessage);
-      console.error('Auth error:', err); // debugging ke liye console mein poora error dikhega
+      console.error('Auth error details:', err); // F12 → Console mein dekho kya error aa raha
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +58,6 @@ export default function LoginForm({ isLogin, onAuthSuccess }: Props) {
 
   return (
     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-      {/* Error message – yahan [object Object] nahi aayega */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative">
           {error}
