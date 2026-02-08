@@ -36,17 +36,36 @@ export default function LoginForm({ isLogin, onAuthSuccess }: Props) {
       if (err?.response?.data) {
         // Swagger/FastAPI style response
         const data = err.response.data;
-        errorMessage = data.detail || data.message || data.error || JSON.stringify(data);
-      } else if (err?.message) {
-        errorMessage = err.message;
-      } else if (err?.detail) {
+
+        // Handle FastAPI validation errors (array of {type, loc, msg, input})
+        if (Array.isArray(data.detail)) {
+          errorMessage = data.detail.map((e: any) => e.msg || e.message).join(', ');
+        } else if (typeof data.detail === 'string') {
+          errorMessage = data.detail;
+        } else if (data.message) {
+          errorMessage = data.message;
+        } else if (data.error) {
+          errorMessage = data.error;
+        } else {
+          // Fallback: stringify but clean
+          errorMessage = JSON.stringify(data).slice(0, 200);
+        }
+      } else if (typeof err?.detail === 'string') {
         errorMessage = err.detail;
-      } else if (err?.error) {
-        errorMessage = err.error;
+      } else if (Array.isArray(err?.detail)) {
+        // Direct FastAPI validation error
+        errorMessage = err.detail.map((e: any) => e.msg || e.message).join(', ');
+      } else if (typeof err?.message === 'string') {
+        errorMessage = err.message;
       } else if (typeof err === 'string') {
         errorMessage = err;
       } else if (err) {
-        errorMessage = String(err) || 'Unknown error';
+        // Last resort: convert to string safely
+        try {
+          errorMessage = JSON.stringify(err).slice(0, 200);
+        } catch {
+          errorMessage = 'Authentication failed. Please try again.';
+        }
       }
 
       setError(errorMessage);

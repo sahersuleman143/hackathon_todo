@@ -9,7 +9,8 @@ import TaskList from '@/components/tasks/TaskList';
 import CreateTaskForm from '@/components/tasks/CreateTaskForm';
 import CategoryManager from '@/components/categories/CategoryManager';
 import StatsCards from '@/components/dashboard/StatsCards';
-import { MdDarkMode, MdLightMode, MdCategory } from 'react-icons/md';
+import UserProfile from '@/components/profile/UserProfile';
+import { MdDarkMode, MdLightMode, MdCategory, MdAccountCircle } from 'react-icons/md';
 import { Toaster } from 'react-hot-toast';
 
 export default function DashboardPage() {
@@ -18,6 +19,7 @@ export default function DashboardPage() {
   const { theme, toggleTheme } = useTheme();
   const [isCreating, setIsCreating] = useState(false);
   const [isManagingCategories, setIsManagingCategories] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -85,16 +87,36 @@ export default function DashboardPage() {
                 <MdCategory size={24} />
               </button>
 
+              {/* Profile Button */}
+              <button
+                onClick={() => setShowProfile(true)}
+                className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+                title="View profile"
+              >
+                <MdAccountCircle size={24} />
+              </button>
+
               {/* User badge */}
               {user?.email && (
-                <div className="hidden sm:flex items-center space-x-2 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 rounded-lg">
-                  <div className="h-8 w-8 bg-indigo-100 dark:bg-indigo-800 rounded-full flex items-center justify-center">
-                    <span className="text-indigo-600 dark:text-indigo-300 font-semibold text-sm">
-                      {user.email.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                <button
+                  onClick={() => setShowProfile(true)}
+                  className="hidden sm:flex items-center space-x-2 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition cursor-pointer"
+                >
+                  {user.profile_picture_url ? (
+                    <img
+                      src={user.profile_picture_url}
+                      alt="Profile"
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 bg-indigo-100 dark:bg-indigo-800 rounded-full flex items-center justify-center">
+                      <span className="text-indigo-600 dark:text-indigo-300 font-semibold text-sm">
+                        {user.email.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                   <span className="text-sm text-gray-700 dark:text-gray-300">{user.email}</span>
-                </div>
+                </button>
               )}
 
               {/* Logout button */}
@@ -190,6 +212,10 @@ export default function DashboardPage() {
           onClose={() => setIsManagingCategories(false)}
           onCategoriesChanged={handleCategoriesChanged}
         />
+      )}
+
+      {showProfile && (
+        <UserProfile onClose={() => setShowProfile(false)} />
       )}
     </div>
   );
